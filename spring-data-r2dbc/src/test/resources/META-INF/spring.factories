@@ -1,0 +1,2 @@
+org.springframework.data.r2dbc.dialect.DialectResolver$R2dbcDialectProvider=org.springframework.data.r2dbc.dialect.DialectResolverUnitTests.ExternalDialectProvider
+org.springframework.r2dbc.core.binding.BindMarkersFactoryResolver$BindMarkerFactoryProvider=org.springframework.data.r2dbc.testing.GaussDBBindMarkersFactoryProvider
