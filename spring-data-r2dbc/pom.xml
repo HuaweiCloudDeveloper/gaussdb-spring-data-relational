@@ -154,44 +154,9 @@
 		<!-- JDBC Drivers -->
 
 		<dependency>
-			<groupId>org.postgresql</groupId>
-			<artifactId>postgresql</artifactId>
-			<version>${postgresql.version}</version>
-			<scope>test</scope>
-		</dependency>
-
-		<dependency>
 			<groupId>com.huaweicloud.gaussdb</groupId>
 			<artifactId>gaussdbjdbc</artifactId>
 			<version>${gaussdb.version}</version>
-			<scope>test</scope>
-		</dependency>
-
-		<dependency>
-			<groupId>com.microsoft.sqlserver</groupId>
-			<artifactId>mssql-jdbc</artifactId>
-			<version>${mssql.version}</version>
-			<scope>test</scope>
-		</dependency>
-
-		<dependency>
-			<groupId>org.mariadb.jdbc</groupId>
-			<artifactId>mariadb-java-client</artifactId>
-			<version>${mariadb-java-client.version}</version>
-			<scope>test</scope>
-		</dependency>
-
-		<dependency>
-			<groupId>mysql</groupId>
-			<artifactId>mysql-connector-java</artifactId>
-			<version>${mysql-connector-java.version}</version>
-			<scope>test</scope>
-		</dependency>
-
-		<dependency>
-			<groupId>com.oracle.database.jdbc</groupId>
-			<artifactId>ojdbc11</artifactId>
-			<version>23.4.0.24.05</version>
 			<scope>test</scope>
 		</dependency>
 
@@ -205,45 +170,10 @@
 		</dependency>
 
 		<dependency>
-			<groupId>io.r2dbc</groupId>
-			<artifactId>r2dbc-h2</artifactId>
-			<version>${r2dbc-h2.version}</version>
-			<scope>test</scope>
-		</dependency>
-
-		<dependency>
 			<groupId>com.huaweicloud.gaussdb</groupId>
 			<artifactId>gaussdb-r2dbc</artifactId>
 			<version>${r2dbc-gaussdb.version}</version>
 			<optional>true</optional>
-		</dependency>
-
-		<dependency>
-			<groupId>org.mariadb</groupId>
-			<artifactId>r2dbc-mariadb</artifactId>
-			<version>${r2dbc-mariadb.version}</version>
-			<scope>test</scope>
-		</dependency>
-
-		<dependency>
-			<groupId>io.r2dbc</groupId>
-			<artifactId>r2dbc-mssql</artifactId>
-			<version>${r2dbc-mssql.version}</version>
-			<scope>test</scope>
-		</dependency>
-
-		<dependency>
-			<groupId>io.asyncer</groupId>
-			<artifactId>r2dbc-mysql</artifactId>
-			<version>${r2dbc-mysql.version}</version>
-			<scope>test</scope>
-		</dependency>
-
-		<dependency>
-			<groupId>com.oracle.database.r2dbc</groupId>
-			<artifactId>oracle-r2dbc</artifactId>
-			<version>${oracle-r2dbc.version}</version>
-			<scope>test</scope>
 		</dependency>
 
 		<dependency>
@@ -254,49 +184,6 @@
 		</dependency>
 
 		<!-- Testcontainers -->
-
-		<dependency>
-			<groupId>org.testcontainers</groupId>
-			<artifactId>mysql</artifactId>
-			<scope>test</scope>
-			<exclusions>
-				<exclusion>
-					<groupId>org.slf4j</groupId>
-					<artifactId>jcl-over-slf4j</artifactId>
-				</exclusion>
-			</exclusions>
-		</dependency>
-
-		<dependency>
-			<groupId>org.testcontainers</groupId>
-			<artifactId>mariadb</artifactId>
-			<scope>test</scope>
-			<exclusions>
-				<exclusion>
-					<groupId>org.slf4j</groupId>
-					<artifactId>jcl-over-slf4j</artifactId>
-				</exclusion>
-			</exclusions>
-		</dependency>
-
-		<dependency>
-			<groupId>org.testcontainers</groupId>
-			<artifactId>mssqlserver</artifactId>
-			<scope>test</scope>
-			<exclusions>
-				<exclusion>
-					<groupId>org.slf4j</groupId>
-					<artifactId>jcl-over-slf4j</artifactId>
-				</exclusion>
-			</exclusions>
-		</dependency>
-
-		<dependency>
-			<groupId>org.testcontainers</groupId>
-			<artifactId>oracle-free</artifactId>
-			<scope>test</scope>
-		</dependency>
-
 		<dependency>
 			<groupId>org.testcontainers</groupId>
 			<artifactId>postgresql</artifactId>
