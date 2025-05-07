@@ -13,7 +13,7 @@ gpg -k
 #
 # Stage on Maven Central
 #
-echo "Staging $VERSION to Maven Central"
+echo "Staging to Maven Central"
 
 ./mvnw \
     -s settings.xml \
