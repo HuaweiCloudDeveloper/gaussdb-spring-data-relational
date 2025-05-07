@@ -5,11 +5,11 @@ name: Stage release to Maven Central
 
 on:
   push:
-    branches: [ release-1.x ]
+    branches: [ release-3.5.x ]
 
 jobs:
   release:
-    if: github.repository == 'HuaweiCloudDeveloper/gaussdb-r2dbc'
+    if: github.repository == 'HuaweiCloudDeveloper/gaussdb-spring-data-relational'
     runs-on: ubuntu-latest
     environment: r2dbc-build
     steps:
