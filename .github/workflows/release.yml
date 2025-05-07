@@ -11,7 +11,7 @@ jobs:
   release:
     if: github.repository == 'HuaweiCloudDeveloper/gaussdb-spring-data-relational'
     runs-on: ubuntu-latest
-    environment: r2dbc-build
+    environment: gaussdb-spring-data-relational-build
     steps:
       - uses: actions/checkout@v4
       - name: Set up JDK 17
