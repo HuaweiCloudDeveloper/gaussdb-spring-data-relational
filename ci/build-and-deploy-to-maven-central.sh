@@ -10,7 +10,7 @@ if [[ $VERSION =~ .*-SNAPSHOT$ ]] ; then
   exit 1
 fi
 
-if [[ $VERSION =~ [^(\d+\.)+(RC(\d+)|M(\d+)|RELEASE)$] ]] ; then
+if [[ $VERSION =~ ^(\d+\.)+(RC(\d+)|M(\d+)|RELEASE)$ ]] ; then
 
   #
   # Prepare GPG Key is expected to be in base64
