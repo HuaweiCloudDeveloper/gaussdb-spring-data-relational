@@ -52,8 +52,8 @@ public class GaussDBDialect extends AbstractDialect {
     private static final Set<Class<?>> POSTGRES_SIMPLE_TYPES = Set.of(UUID.class, URL.class, URI.class, InetAddress.class,
         Map.class);
 
-    private final IdentifierProcessing identifierProcessing = IdentifierProcessing.create(Quoting.ANSI,
-        LetterCasing.LOWER_CASE);
+    private final IdentifierProcessing identifierProcessing = IdentifierProcessing.create(Quoting.NONE,
+        LetterCasing.UPPER_CASE);
 
     private final IdGeneration idGeneration = new IdGeneration() {
 
