@@ -15,17 +15,24 @@
  */
 package org.springframework.data.jdbc.core.convert;
 
-import static java.util.Collections.*;
-import static org.assertj.core.api.Assertions.*;
-import static org.assertj.core.api.SoftAssertions.*;
-import static org.springframework.data.relational.core.mapping.ForeignKeyNaming.*;
-import static org.springframework.data.relational.core.sql.SqlIdentifier.*;
+import static java.util.Collections.emptySet;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.entry;
+import static org.assertj.core.api.SoftAssertions.assertSoftly;
+import static org.springframework.data.relational.core.mapping.ForeignKeyNaming.APPLY_RENAMING;
+import static org.springframework.data.relational.core.mapping.ForeignKeyNaming.IGNORE_RENAMING;
+import static org.springframework.data.relational.core.sql.SqlIdentifier.EMPTY;
+import static org.springframework.data.relational.core.sql.SqlIdentifier.quoted;
+import static org.springframework.data.relational.core.sql.SqlIdentifier.unquoted;
 
 import java.util.Map;
 import java.util.Set;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.ReadOnlyProperty;
 import org.springframework.data.annotation.Version;
@@ -33,13 +40,13 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jdbc.core.PersistentPropertyPathTestUtils;
+import org.springframework.data.jdbc.core.dialect.JdbcPostgresDialect;
+import org.springframework.data.jdbc.core.dialect.JdbcSqlServerDialect;
 import org.springframework.data.jdbc.core.mapping.AggregateReference;
 import org.springframework.data.jdbc.core.mapping.JdbcMappingContext;
 import org.springframework.data.mapping.PersistentPropertyPath;
 import org.springframework.data.relational.core.dialect.AnsiDialect;
 import org.springframework.data.relational.core.dialect.Dialect;
-import org.springframework.data.relational.core.dialect.PostgresDialect;
-import org.springframework.data.relational.core.dialect.SqlServerDialect;
 import org.springframework.data.relational.core.mapping.AggregatePath;
 import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.DefaultNamingStrategy;
@@ -274,7 +281,7 @@ class SqlGeneratorUnitTests {
 	@Test // GH-821
 	void findAllSortedWithNullHandling_resolvesNullHandlingWhenDialectSupportsIt() {
 
-		SqlGenerator sqlGenerator = createSqlGenerator(DummyEntity.class, PostgresDialect.INSTANCE);
+		SqlGenerator sqlGenerator = createSqlGenerator(DummyEntity.class, JdbcPostgresDialect.INSTANCE);
 
 		String sql = sqlGenerator
 				.getFindAll(Sort.by(new Sort.Order(Sort.Direction.ASC, "name", Sort.NullHandling.NULLS_LAST)));
@@ -285,7 +292,7 @@ class SqlGeneratorUnitTests {
 	@Test // GH-821
 	void findAllSortedWithNullHandling_ignoresNullHandlingWhenDialectDoesNotSupportIt() {
 
-		SqlGenerator sqlGenerator = createSqlGenerator(DummyEntity.class, SqlServerDialect.INSTANCE);
+		SqlGenerator sqlGenerator = createSqlGenerator(DummyEntity.class, JdbcSqlServerDialect.INSTANCE);
 
 		String sql = sqlGenerator
 				.getFindAll(Sort.by(new Sort.Order(Sort.Direction.ASC, "name", Sort.NullHandling.NULLS_LAST)));
@@ -345,17 +352,57 @@ class SqlGeneratorUnitTests {
 	@Test // GH-1919
 	void selectByQuery() {
 
-		Query query = Query.query(Criteria.where("id").is(23L));
+		Query query = Query.query(Criteria.where("id").is(23L)).columns(new String[0]);
 
 		String sql = sqlGenerator.selectByQuery(query, new MapSqlParameterSource());
 
 		assertThat(sql).contains( //
 				"SELECT", //
+				"dummy_entity.id1 AS id1, dummy_entity.x_name AS x_name", //
 				"FROM dummy_entity", //
 				"LEFT OUTER JOIN referenced_entity ref ON ref.dummy_entity = dummy_entity.id1", //
 				"LEFT OUTER JOIN second_level_referenced_entity ref_further ON ref_further.referenced_entity = ref.x_l1id", //
 				"WHERE dummy_entity.id1 = :id1" //
 		);
+	}
+
+	@Test // GH-1803
+	void selectByQueryWithColumnLimit() {
+
+		Query query = Query.empty().columns("id", "alpha", "beta", "gamma");
+
+		String sql = sqlGenerator.selectByQuery(query, new MapSqlParameterSource());
+
+		assertThat(sql).contains( //
+				"SELECT dummy_entity.id1 AS id1, dummy_entity.alpha, dummy_entity.beta, dummy_entity.gamma", //
+				"FROM dummy_entity" //
+		);
+	}
+
+	@Test // GH-1803
+	void selectingSetContentSelectsAllColumns() {
+
+		Query query = Query.empty().columns("elements.content");
+
+		String sql = sqlGenerator.selectByQuery(query, new MapSqlParameterSource());
+
+		assertThat(sql).contains( //
+				"SELECT dummy_entity.id1 AS id1, dummy_entity.x_name AS x_name"//
+		);
+	}
+
+	@Test // GH-1803
+	void selectByQueryWithMappedColumnPathsRendersCorrectSelection() {
+
+		Query query = Query.empty().columns("ref.content");
+
+		String sql = sqlGenerator.selectByQuery(query, new MapSqlParameterSource());
+
+		assertThat(sql).contains( //
+				"SELECT", //
+				"ref.x_content AS ref_x_content", //
+				"FROM dummy_entity", //
+				"LEFT OUTER JOIN referenced_entity ref ON ref.dummy_entity = dummy_entity.id1");
 	}
 
 	@Test // GH-1919
@@ -375,7 +422,8 @@ class SqlGeneratorUnitTests {
 				"ORDER BY dummy_entity.id1 ASC" //
 		);
 		assertThat(sql).containsOnlyOnce("LEFT OUTER JOIN referenced_entity ref ON ref.dummy_entity = dummy_entity.id1");
-		assertThat(sql).containsOnlyOnce("LEFT OUTER JOIN second_level_referenced_entity ref_further ON ref_further.referenced_entity = ref.x_l1id");
+		assertThat(sql).containsOnlyOnce(
+				"LEFT OUTER JOIN second_level_referenced_entity ref_further ON ref_further.referenced_entity = ref.x_l1id");
 	}
 
 	@Test // DATAJDBC-131, DATAJDBC-111
@@ -512,7 +560,7 @@ class SqlGeneratorUnitTests {
 	@Test // DATAJDBC-264
 	void getInsertForEmptyColumnListPostgres() {
 
-		SqlGenerator sqlGenerator = createSqlGenerator(IdOnlyEntity.class, PostgresDialect.INSTANCE);
+		SqlGenerator sqlGenerator = createSqlGenerator(IdOnlyEntity.class, JdbcPostgresDialect.INSTANCE);
 
 		String insert = sqlGenerator.getInsert(emptySet());
 
@@ -522,7 +570,7 @@ class SqlGeneratorUnitTests {
 	@Test // GH-777
 	void gerInsertForEmptyColumnListMsSqlServer() {
 
-		SqlGenerator sqlGenerator = createSqlGenerator(IdOnlyEntity.class, SqlServerDialect.INSTANCE);
+		SqlGenerator sqlGenerator = createSqlGenerator(IdOnlyEntity.class, JdbcSqlServerDialect.INSTANCE);
 
 		String insert = sqlGenerator.getInsert(emptySet());
 

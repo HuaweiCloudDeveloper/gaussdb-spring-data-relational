@@ -63,7 +63,7 @@
 		<dependency>
 			<groupId>org.springframework.data</groupId>
 			<artifactId>spring-data-r2dbc</artifactId>
-			<version>3.5.0-RC1</version>
+			<version>${springdata.commons}</version>
 		</dependency>
 
 		<dependency>

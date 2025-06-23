@@ -29,9 +29,10 @@ import java.util.function.Function;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
@@ -60,6 +61,7 @@ import org.springframework.data.relational.core.mapping.InsertOnlyProperty;
 import org.springframework.data.relational.core.mapping.MappedCollection;
 import org.springframework.data.relational.core.mapping.RelationalMappingContext;
 import org.springframework.data.relational.core.mapping.Table;
+import org.springframework.data.relational.core.mapping.event.BeforeConvertCallback;
 import org.springframework.data.relational.core.query.Criteria;
 import org.springframework.data.relational.core.query.CriteriaDefinition;
 import org.springframework.data.relational.core.query.Query;
@@ -236,7 +238,25 @@ abstract class AbstractJdbcAggregateTemplateIntegrationTests {
 		Query query = Query.query(criteria);
 		Iterable<SimpleListParent> reloadedById = template.findAll(query, SimpleListParent.class);
 
-		assertThat(reloadedById).extracting(e -> e.id, e -> e.content.size()).containsExactly(tuple(two.id, 2));
+		assertThat(reloadedById) //
+				.extracting(e -> e.id, e-> e.name, e -> e.content.size()) //
+				.containsExactly(tuple(two.id, two.name, 2));
+	}
+
+	@Test // GH-1803
+	void findAllByQueryWithColumns() {
+
+		template.save(SimpleListParent.of("one", "one_1"));
+		SimpleListParent two = template.save(SimpleListParent.of("two", "two_1", "two_2"));
+		template.save(SimpleListParent.of("three", "three_1", "three_2", "three_3"));
+
+		CriteriaDefinition criteria = CriteriaDefinition.from(Criteria.where("id").is(two.id));
+		Query query = Query.query(criteria).columns("id");
+		Iterable<SimpleListParent> reloadedById = template.findAll(query, SimpleListParent.class);
+
+		assertThat(reloadedById) //
+				.extracting(e -> e.id, e-> e.name, e -> e.content.size()) //
+				.containsExactly(tuple(two.id, null, 2));
 	}
 
 	@Test // GH-1601
@@ -1373,6 +1393,22 @@ abstract class AbstractJdbcAggregateTemplateIntegrationTests {
 		assertThat(enumMapOwners).containsExactly(enumMapOwner);
 	}
 
+	@Test // GH-2064
+	void saveAllBeforeConvertCallback() {
+
+		BeforeConvertCallbackForSaveBatch first = new BeforeConvertCallbackForSaveBatch("first");
+		BeforeConvertCallbackForSaveBatch second = new BeforeConvertCallbackForSaveBatch("second");
+		BeforeConvertCallbackForSaveBatch third = new BeforeConvertCallbackForSaveBatch("third");
+
+		template.saveAll(List.of(first, second, third));
+
+		List<BeforeConvertCallbackForSaveBatch> allEntriesInTable = template
+				.findAll(BeforeConvertCallbackForSaveBatch.class);
+
+		assertThat(allEntriesInTable).hasSize(3).extracting(BeforeConvertCallbackForSaveBatch::getName)
+				.containsExactlyInAnyOrder("first", "second", "third");
+	}
+
 	@Test // GH-1684
 	void oneToOneWithIdenticalIdColumnName() {
 
@@ -2184,6 +2220,31 @@ abstract class AbstractJdbcAggregateTemplateIntegrationTests {
 		}
 	}
 
+	@Table("BEFORE_CONVERT_CALLBACK_FOR_SAVE_BATCH")
+	static class BeforeConvertCallbackForSaveBatch {
+
+		@Id
+		private String id;
+
+		private String name;
+
+		public BeforeConvertCallbackForSaveBatch(String name) {
+			this.name = name;
+		}
+
+		public String getId() {
+			return id;
+		}
+
+		public void setId(String id) {
+			this.id = id;
+		}
+
+		public String getName() {
+			return name;
+		}
+	}
+
 	@Table("VERSIONED_AGGREGATE")
 	static class AggregateWithPrimitiveShortVersion extends VersionedAggregate {
 
@@ -2214,12 +2275,14 @@ abstract class AbstractJdbcAggregateTemplateIntegrationTests {
 
 	@Table
 	static class WithInsertOnly {
+
 		@Id Long id;
 		@InsertOnlyProperty String insertOnly;
 	}
 
 	@Table
 	static class MultipleCollections {
+
 		@Id Long id;
 		String name;
 		List<ListElement> listElements = new ArrayList<>();
@@ -2271,9 +2334,17 @@ abstract class AbstractJdbcAggregateTemplateIntegrationTests {
 		}
 
 		@Bean
-		JdbcAggregateOperations operations(ApplicationEventPublisher publisher, RelationalMappingContext context,
+		BeforeConvertCallback<BeforeConvertCallbackForSaveBatch> callback() {
+			return aggregate -> {
+				aggregate.setId(UUID.randomUUID().toString());
+				return aggregate;
+			};
+		}
+
+		@Bean
+		JdbcAggregateOperations operations(ApplicationContext applicationContext, RelationalMappingContext context,
 				DataAccessStrategy dataAccessStrategy, JdbcConverter converter) {
-			return new JdbcAggregateTemplate(publisher, context, converter, dataAccessStrategy);
+			return new JdbcAggregateTemplate(applicationContext, context, converter, dataAccessStrategy);
 		}
 	}
 
@@ -2285,5 +2356,10 @@ abstract class AbstractJdbcAggregateTemplateIntegrationTests {
 	static class JdbcAggregateTemplateSingleQueryLoadingIntegrationTests
 			extends AbstractJdbcAggregateTemplateIntegrationTests {
 
+		@Disabled
+		@Override
+		void findAllByQueryWithColumns() {
+			super.findAllByQueryWithColumns();
+		}
 	}
 }

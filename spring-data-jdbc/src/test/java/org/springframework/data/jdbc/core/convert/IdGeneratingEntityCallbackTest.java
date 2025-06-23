@@ -27,12 +27,11 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
-
 import org.springframework.data.annotation.Id;
+import org.springframework.data.jdbc.core.dialect.JdbcMySqlDialect;
+import org.springframework.data.jdbc.core.dialect.JdbcPostgresDialect;
 import org.springframework.data.mapping.model.SimpleTypeHolder;
 import org.springframework.data.relational.core.conversion.MutableAggregateChange;
-import org.springframework.data.relational.core.dialect.MySqlDialect;
-import org.springframework.data.relational.core.dialect.PostgresDialect;
 import org.springframework.data.relational.core.mapping.RelationalMappingContext;
 import org.springframework.data.relational.core.mapping.Sequence;
 import org.springframework.data.relational.core.mapping.Table;
@@ -56,7 +55,8 @@ class IdGeneratingEntityCallbackTest {
 	void setUp() {
 
 		relationalMappingContext = new RelationalMappingContext();
-		relationalMappingContext.setSimpleTypeHolder(new SimpleTypeHolder(PostgresDialect.INSTANCE.simpleTypes(), true));
+		relationalMappingContext
+				.setSimpleTypeHolder(new SimpleTypeHolder(JdbcPostgresDialect.INSTANCE.simpleTypes(), true));
 	}
 
 	@Test // GH-1923
@@ -65,7 +65,7 @@ class IdGeneratingEntityCallbackTest {
 		NamedParameterJdbcOperations operations = mock(NamedParameterJdbcOperations.class);
 
 		IdGeneratingEntityCallback subject = new IdGeneratingEntityCallback(relationalMappingContext,
-				MySqlDialect.INSTANCE, operations);
+				JdbcMySqlDialect.INSTANCE, operations);
 
 		EntityWithSequence processed = (EntityWithSequence) subject.onBeforeSave(new EntityWithSequence(),
 				MutableAggregateChange.forSave(new EntityWithSequence()));
@@ -77,7 +77,7 @@ class IdGeneratingEntityCallbackTest {
 	void entityIsNotMarkedWithTargetSequence() {
 
 		IdGeneratingEntityCallback subject = new IdGeneratingEntityCallback(relationalMappingContext,
-				MySqlDialect.INSTANCE, operations);
+				JdbcMySqlDialect.INSTANCE, operations);
 
 		NoSequenceEntity processed = (NoSequenceEntity) subject.onBeforeSave(new NoSequenceEntity(),
 				MutableAggregateChange.forSave(new NoSequenceEntity()));
@@ -93,7 +93,7 @@ class IdGeneratingEntityCallbackTest {
 				.thenReturn(generatedId);
 
 		IdGeneratingEntityCallback subject = new IdGeneratingEntityCallback(relationalMappingContext,
-				PostgresDialect.INSTANCE, operations);
+				JdbcPostgresDialect.INSTANCE, operations);
 
 		EntityWithSequence processed = (EntityWithSequence) subject.onBeforeSave(new EntityWithSequence(),
 				MutableAggregateChange.forSave(new EntityWithSequence()));
@@ -109,7 +109,7 @@ class IdGeneratingEntityCallbackTest {
 				.thenReturn(generatedId);
 
 		IdGeneratingEntityCallback subject = new IdGeneratingEntityCallback(relationalMappingContext,
-				PostgresDialect.INSTANCE, operations);
+				JdbcPostgresDialect.INSTANCE, operations);
 
 		EntityWithIntSequence processed = (EntityWithIntSequence) subject.onBeforeSave(new EntityWithIntSequence(),
 				MutableAggregateChange.forSave(new EntityWithIntSequence()));
@@ -125,7 +125,7 @@ class IdGeneratingEntityCallbackTest {
 				.thenReturn(generatedId);
 
 		IdGeneratingEntityCallback subject = new IdGeneratingEntityCallback(relationalMappingContext,
-				PostgresDialect.INSTANCE, operations);
+				JdbcPostgresDialect.INSTANCE, operations);
 
 		EntityWithUuidSequence processed = (EntityWithUuidSequence) subject.onBeforeSave(new EntityWithUuidSequence(),
 				MutableAggregateChange.forSave(new EntityWithUuidSequence()));
