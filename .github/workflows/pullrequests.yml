@@ -5,7 +5,7 @@ name: Build Pull request with Maven
 
 on:
   pull_request:
-    branches: [ 3.5.x ]
+    branches: [ 3.4.x ]
 
 jobs:
   pr-build:
