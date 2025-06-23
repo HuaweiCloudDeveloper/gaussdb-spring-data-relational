@@ -30,7 +30,6 @@ import org.springframework.jdbc.core.JdbcOperations;
  *
  * @author Jens Schauder
  * @author Chirag Tailor
- * @author Mikhail Polivakha
  */
 public class TestDatabaseFeatures {
 
@@ -80,10 +79,6 @@ public class TestDatabaseFeatures {
 		assumeThat(database).isNotIn(Database.MySql, Database.MariaDb, Database.SqlServer);
 	}
 
-	private void supportsSequences() {
-		assumeThat(database).isNotIn(Database.MySql);
-	}
-
 	private void supportsWhereInTuples() {
 		assumeThat(database).isIn(Database.MySql, Database.PostgreSql);
 	}
@@ -122,7 +117,6 @@ public class TestDatabaseFeatures {
 		SUPPORTS_NULL_PRECEDENCE(TestDatabaseFeatures::supportsNullPrecedence),
 		IS_POSTGRES(f -> f.databaseIs(Database.PostgreSql)), //
 		WHERE_IN_TUPLE(TestDatabaseFeatures::supportsWhereInTuples), //
-        SUPPORTS_SEQUENCES(TestDatabaseFeatures::supportsSequences), //
 		IS_HSQL(f -> f.databaseIs(Database.Hsql));
 
 		private final Consumer<TestDatabaseFeatures> featureMethod;

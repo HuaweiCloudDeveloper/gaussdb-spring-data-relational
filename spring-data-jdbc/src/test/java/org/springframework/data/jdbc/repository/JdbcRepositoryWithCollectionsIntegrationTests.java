@@ -42,11 +42,9 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
  *
  * @author Jens Schauder
  * @author Thomas Lang
- * @author Yunyoung LEE
- * @author Nikita Konev
  */
 @IntegrationTest
-class JdbcRepositoryWithCollectionsIntegrationTests {
+public class JdbcRepositoryWithCollectionsIntegrationTests {
 
 	@Autowired NamedParameterJdbcTemplate template;
 	@Autowired DummyEntityRepository repository;
@@ -59,7 +57,7 @@ class JdbcRepositoryWithCollectionsIntegrationTests {
 	}
 
 	@Test // DATAJDBC-113
-	void saveAndLoadEmptySet() {
+	public void saveAndLoadEmptySet() {
 
 		DummyEntity entity = repository.save(createDummyEntity());
 
@@ -73,7 +71,7 @@ class JdbcRepositoryWithCollectionsIntegrationTests {
 	}
 
 	@Test // DATAJDBC-113
-	void saveAndLoadNonEmptySet() {
+	public void saveAndLoadNonEmptySet() {
 
 		Element element1 = new Element();
 		Element element2 = new Element();
@@ -96,7 +94,7 @@ class JdbcRepositoryWithCollectionsIntegrationTests {
 	}
 
 	@Test // DATAJDBC-113
-	void findAllLoadsCollection() {
+	public void findAllLoadsCollection() {
 
 		Element element1 = new Element();
 		Element element2 = new Element();
@@ -119,7 +117,7 @@ class JdbcRepositoryWithCollectionsIntegrationTests {
 
 	@Test // DATAJDBC-113
 	@EnabledOnFeature(SUPPORTS_GENERATED_IDS_IN_REFERENCED_ENTITIES)
-	void updateSet() {
+	public void updateSet() {
 
 		Element element1 = createElement("one");
 		Element element2 = createElement("two");
@@ -156,7 +154,7 @@ class JdbcRepositoryWithCollectionsIntegrationTests {
 	}
 
 	@Test // DATAJDBC-113
-	void deletingWithSet() {
+	public void deletingWithSet() {
 
 		Element element1 = createElement("one");
 		Element element2 = createElement("two");
@@ -175,26 +173,6 @@ class JdbcRepositoryWithCollectionsIntegrationTests {
 		assertThat(count).isEqualTo(0);
 	}
 
-    @Test // GH-771
-    void deleteByName() {
-
-        Element element1 = createElement("one");
-        Element element2 = createElement("two");
-
-        DummyEntity entity = createDummyEntity();
-        entity.content.add(element1);
-        entity.content.add(element2);
-
-        entity = repository.save(entity);
-
-        assertThat(repository.deleteByName("Entity Name")).isEqualTo(1);
-
-        assertThat(repository.findById(entity.id)).isEmpty();
-
-        Long count = template.queryForObject("select count(1) from Element", new HashMap<>(), Long.class);
-        assertThat(count).isEqualTo(0);
-    }
-
 	private Element createElement(String content) {
 
 		Element element = new Element();
@@ -202,9 +180,7 @@ class JdbcRepositoryWithCollectionsIntegrationTests {
 		return element;
 	}
 
-	interface DummyEntityRepository extends CrudRepository<DummyEntity, Long> {
-        long deleteByName(String name);
-    }
+	interface DummyEntityRepository extends CrudRepository<DummyEntity, Long> {}
 
 	@Configuration
 	@Import(TestConfiguration.class)

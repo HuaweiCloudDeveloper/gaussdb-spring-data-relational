@@ -37,7 +37,7 @@ import org.springframework.data.relational.core.sql.TableLike;
 
 /**
  * An SQL dialect for GaussDB.
- *
+ * </p>
  * Notes: this file is token from PostgresDialect and add specific changes for GaussDB
  *
  * @author liubao
@@ -51,17 +51,6 @@ public class GaussDBDialect extends AbstractDialect {
 
     private static final Set<Class<?>> POSTGRES_SIMPLE_TYPES = Set.of(UUID.class, URL.class, URI.class, InetAddress.class,
         Map.class);
-
-    private final IdentifierProcessing identifierProcessing = IdentifierProcessing.create(Quoting.NONE,
-        LetterCasing.UPPER_CASE);
-
-    private final IdGeneration idGeneration = new IdGeneration() {
-
-        @Override
-        public String createSequenceQuery(SqlIdentifier sequenceName) {
-            return "SELECT nextval('%s')".formatted(sequenceName.toSql(getIdentifierProcessing()));
-        }
-    };
 
     protected GaussDBDialect() {}
 
@@ -153,7 +142,7 @@ public class GaussDBDialect extends AbstractDialect {
 
     @Override
     public IdentifierProcessing getIdentifierProcessing() {
-        return identifierProcessing;
+        return IdentifierProcessing.create(Quoting.ANSI, LetterCasing.LOWER_CASE);
     }
 
     @Override
@@ -164,10 +153,5 @@ public class GaussDBDialect extends AbstractDialect {
     @Override
     public SimpleFunction getExistsFunction() {
         return Functions.least(Functions.count(SQL.literalOf(1)), SQL.literalOf(1));
-    }
-
-    @Override
-    public IdGeneration getIdGeneration() {
-        return idGeneration;
     }
 }
